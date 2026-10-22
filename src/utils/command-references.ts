@@ -56,6 +56,7 @@ const COMMAND_TO_SKILL_NAME: Record<string, string> = {
   'new': 'openspec-new-change',
   'continue': 'openspec-continue-change',
   'apply': 'openspec-apply-change',
+  'apply-poc': 'openspec-apply-poc',
   'update': 'openspec-update-change',
   'ff': 'openspec-ff-change',
   'sync': 'openspec-sync-specs',

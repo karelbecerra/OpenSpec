@@ -43,6 +43,7 @@ export const COMMAND_IDS = [
   'new',
   'continue',
   'apply',
+  'apply-poc',
   'update',
   'ff',
   'sync',

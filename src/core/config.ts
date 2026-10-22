@@ -5,6 +5,7 @@ export const OPENSPEC_SKILL_NAMES = [
   'openspec-new-change',
   'openspec-continue-change',
   'openspec-apply-change',
+  'openspec-apply-poc',
   'openspec-update-change',
   'openspec-ff-change',
   'openspec-sync-specs',

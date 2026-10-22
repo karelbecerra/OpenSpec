@@ -3711,7 +3711,7 @@ More user content after markers.
           featureFlags: {},
           profile: 'custom',
           delivery,
-          workflows: ['propose', 'explore', 'apply', 'archive'],
+          workflows: ['propose', 'explore', 'apply', 'apply-poc', 'archive'],
         });
 
         const archiveSkill = path.join(
@@ -3767,7 +3767,7 @@ More user content after markers.
         featureFlags: {},
         profile: 'custom',
         delivery: 'both',
-        workflows: ['propose', 'explore', 'apply', 'sync', 'archive'],
+        workflows: ['propose', 'explore', 'apply', 'apply-poc', 'sync', 'archive'],
       });
 
       const initCommand = new InitCommand({ tools: 'claude', force: true });
@@ -3795,7 +3795,7 @@ More user content after markers.
         featureFlags: {},
         profile: 'custom',
         delivery: 'both',
-        workflows: ['propose', 'explore', 'apply', 'update', 'sync', 'archive', 'verify'],
+        workflows: ['propose', 'explore', 'apply', 'apply-poc', 'update', 'sync', 'archive', 'verify'],
       });
 
       const initCommand = new InitCommand({ tools: 'claude', force: true });
@@ -4140,6 +4140,7 @@ More user content after markers.
 
       expect((await fs.readdir(skillsDir)).sort()).toEqual([
         'openspec-apply-change',
+        'openspec-apply-poc',
         'openspec-archive-change',
         'openspec-custom',
         'openspec-explore',

@@ -318,11 +318,12 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      // Core profile: propose, explore, apply, update, sync, archive
+      // Core profile: propose, explore, apply, apply-poc, update, sync, archive
       const coreSkillNames = [
         'openspec-propose',
         'openspec-explore',
         'openspec-apply-change',
+        'openspec-apply-poc',
         'openspec-update-change',
         'openspec-sync-specs',
         'openspec-archive-change',
@@ -519,11 +520,12 @@ describe('InitCommand', () => {
           'openspec-propose',
           'openspec-explore',
           'openspec-apply-change',
+          'openspec-apply-poc',
           'openspec-update-change',
           'openspec-sync-specs',
           'openspec-archive-change',
         ].map((name) => path.join(testDir, '.claude', 'skills', name, 'SKILL.md')),
-        ...['propose', 'explore', 'apply', 'update', 'sync', 'archive'].map((name) =>
+        ...['propose', 'explore', 'apply', 'apply-poc', 'update', 'sync', 'archive'].map((name) =>
           path.join(testDir, '.claude', 'commands', 'opsx', `${name}.md`)
         ),
       ];
@@ -1105,6 +1107,7 @@ describe('InitCommand', () => {
       const skillsDir = path.join(testDir, '.grok', 'skills');
       const skillNames = [
         'openspec-apply-change',
+        'openspec-apply-poc',
         'openspec-archive-change',
         'openspec-explore',
         'openspec-propose',
@@ -1733,7 +1736,7 @@ describe('InitCommand', () => {
         if (delivery !== 'skills') {
           const commandFiles = await fs.readdir(commandsDir);
           expect(commandFiles.sort()).toEqual([
-            'opsx-apply.md', 'opsx-archive.md', 'opsx-explore.md',
+            'opsx-apply-poc.md', 'opsx-apply.md', 'opsx-archive.md', 'opsx-explore.md',
             'opsx-propose.md', 'opsx-sync.md', 'opsx-update.md',
           ]);
           for (const filename of commandFiles) {
@@ -1759,7 +1762,7 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       const commandsDir = path.join(testDir, `.${toolId}`, 'commands', 'opsx');
-      const commandIds = ['apply', 'archive', 'explore', 'propose', 'sync', 'update'];
+      const commandIds = ['apply-poc', 'apply', 'archive', 'explore', 'propose', 'sync', 'update'];
       expect((await fs.readdir(commandsDir)).sort()).toEqual(commandIds.map((id) => `${id}.toml`));
       for (const commandId of commandIds) {
         const content = parseToml(await fs.readFile(path.join(commandsDir, `${commandId}.toml`), 'utf-8'));
