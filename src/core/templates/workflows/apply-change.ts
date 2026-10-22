@@ -8,6 +8,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 import { optionalWorkflow } from '../optional-workflow.js';
 import { STORE_SELECTION_GUIDANCE } from './store-selection.js';
 import { PROJECT_ROOT_GUARD } from './project-root.js';
+import { POC_MODE_GUIDANCE } from './poc-mode.js';
 
 /**
  * `/opsx:continue` is not in the `core` profile, so the blocked-state handoff
@@ -27,6 +28,19 @@ const ARCHIVE_HANDOFF = optionalWorkflow(
   'You can archive this change by running `openspec archive "<name>"`.'
 );
 
+export interface ApplyInstructionOptions {
+  /**
+   * `argument` (default): PoC mode turns on only when the first argument is
+   * `poc` (`/opsx:apply poc <change>`). `always`: the `/opsx:apply-poc` surface.
+   */
+  poc?: 'argument' | 'always';
+}
+
+const POC_INPUT_BY_MODE: Record<NonNullable<ApplyInstructionOptions['poc']>, string> = {
+  argument: `**PoC mode**: If the first argument is the literal word \`poc\` (e.g., \`/opsx:apply poc add-auth\`), PoC mode is on and the remaining argument, if any, is the change name. Announce "PoC mode: on" and follow the PoC mode section below. Otherwise PoC mode is off and that section does not apply. A change literally named \`poc\` is applied in PoC mode with \`/opsx:apply poc poc\`; to apply it without PoC mode, name it in plain words (e.g., "apply the change named poc").`,
+  always: `**PoC mode**: Always on for this workflow. Announce "PoC mode: on" and follow the PoC mode section below. Any argument is the change name.`,
+};
+
 /**
  * The apply workflow instructions, authored once and rendered by both the
  * skill and command surfaces. The surfaces are intentionally distinct, but
@@ -36,14 +50,18 @@ const ARCHIVE_HANDOFF = optionalWorkflow(
  * cannot silently drift. Should a surface ever need genuinely different
  * wording, add a parameter here and pass it from that surface's template.
  */
-export function getApplyInstructions(): string {
+export function getApplyInstructions(options: ApplyInstructionOptions = {}): string {
+  const poc = options.poc ?? 'argument';
+  const self = poc === 'always' ? '/opsx:apply-poc' : '/opsx:apply';
   return `Implement tasks from an OpenSpec change.
 
 ${STORE_SELECTION_GUIDANCE}
 
 ${PROJECT_ROOT_GUARD}
 
-**Input**: Optionally specify a change name (e.g., \`/opsx:apply add-auth\`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+**Input**: Optionally specify a change name (e.g., \`${self} add-auth\`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+
+${POC_INPUT_BY_MODE[poc]}
 
 **Steps**
 
@@ -54,7 +72,7 @@ ${PROJECT_ROOT_GUARD}
    - Auto-select if only one active change exists
    - If ambiguous, run \`openspec list --json\` to get available changes and ask the user to select one
 
-   Always announce: "Using change: <name>" and how to override (e.g., \`/opsx:apply <other>\`).
+   Always announce: "Using change: <name>" and how to override (e.g., \`${self} <other>\`).
 
 2. **Check status to understand the schema**
    \`\`\`bash
@@ -221,13 +239,17 @@ What would you like to do?
 This skill supports the "actions on a change" model:
 
 - **Can be invoked anytime**: Before all artifacts are done (if tasks exist), after partial implementation, interleaved with other actions
-- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly`;
+- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly
+
+## PoC mode${poc === 'argument' ? ' (only when enabled)' : ''}
+
+${POC_MODE_GUIDANCE}`;
 }
 
 export function getApplyChangeSkillTemplate(): SkillTemplate {
   return {
     name: 'openspec-apply-change',
-    description: 'Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks. Also use when the user says "openspec apply", "opsx apply", or "openspec implement".',
+    description: 'Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks. Also use when the user says "openspec apply", "opsx apply", or "openspec implement". Supports PoC mode ("opsx apply poc", "apply as PoC").',
     instructions: getApplyInstructions(),
     license: 'MIT',
     compatibility: 'Requires openspec CLI.',

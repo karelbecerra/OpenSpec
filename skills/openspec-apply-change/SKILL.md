@@ -1,6 +1,6 @@
 ---
 name: openspec-apply-change
-description: Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks. Also use when the user says "openspec apply", "opsx apply", or "openspec implement".
+description: Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks. Also use when the user says "openspec apply", "opsx apply", or "openspec implement". Supports PoC mode ("opsx apply poc", "apply as PoC").
 allowed-tools: Bash(openspec:*)
 license: MIT
 compatibility: Requires openspec CLI.
@@ -25,6 +25,8 @@ Otherwise, with no root, what happens next depends on how this workflow was reac
 In both branches, never create the root as a side effect: do not run `openspec init` until the user asks for it, do not hand-create `openspec/` files, and do not let a command create it.
 
 **Input**: Optionally specify a change name (e.g., `/openspec-apply-change add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+
+**PoC mode**: If the first argument is the literal word `poc` (e.g., `/openspec-apply-change poc add-auth`), PoC mode is on and the remaining argument, if any, is the change name. Announce "PoC mode: on" and follow the PoC mode section below. Otherwise PoC mode is off and that section does not apply. A change literally named `poc` is applied in PoC mode with `/openspec-apply-change poc poc`; to apply it without PoC mode, name it in plain words (e.g., "apply the change named poc").
 
 **Steps**
 
@@ -203,3 +205,32 @@ This skill supports the "actions on a change" model:
 
 - **Can be invoked anytime**: Before all artifacts are done (if tasks exist), after partial implementation, interleaved with other actions
 - **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly
+
+## PoC mode (only when enabled)
+
+### Principle #2: Divide and Conquer
+
+**Principle:** Break large problems and codebases into smaller, coherent parts that can be understood, developed, and verified independently.
+
+Split software into related components, modules, services, or applications with clear responsibilities and interfaces. The objective is not to create as many pieces as possible, but to keep each development task and its required context small enough to reason about effectively. This is especially valuable in AI-assisted development, where focused context can reduce confusion and improve the quality of changes.
+
+**In practice:**
+- Identify natural boundaries based on responsibilities and business capabilities.
+- Define clear contracts between parts.
+- Work on one bounded component or behavior at a time.
+- Keep the code and documentation needed for each task focused.
+- Integrate and test the parts together regularly.
+- Avoid splitting a simple application into distributed services without a real need.
+
+**Guiding question:** *Can we solve this as a smaller, well-defined problem without losing sight of the whole?*
+
+### How PoC mode changes the apply steps
+
+1. **Group before implementing.** Before step 6, group the pending tasks by component or boundary (one responsibility each) and show the grouping. Keep each task's original order inside its group.
+2. **Name the contract first.** For each group, state what crosses its boundary (function signatures, file formats, API shapes, events) before writing code. If a contract cannot be named, pause: the boundary is probably wrong.
+3. **One group at a time.** Implement a single group, touching only the files that group owns plus its contracts. Do not start the next group until the current one is done or paused.
+4. **Integrate after each group.** Run the group's own tests, then a quick integration check with the parts already built, and report both results.
+5. **No premature splits.** Pause and ask before adding a new service, package, or deployable unit unless the change's artifacts state the need. Prefer modules in one process for a PoC.
+6. **Close with the boundaries.** In the completion output, add a `### Boundaries` section listing each part, its contract, and what was deliberately not split, and why.
+
+These rules add to the apply guardrails; they never override CLI state, task completion criteria, or an explicit user choice.

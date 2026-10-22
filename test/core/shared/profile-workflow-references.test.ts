@@ -30,6 +30,10 @@ import { transformToSkillReferences } from '../../../src/utils/command-reference
  */
 const skillNameFor = (id: string) => transformToSkillReferences(`/opsx:${id}`);
 
+/** `/opsx:<id>` as a whole token, so `/opsx:apply-poc` does not count as `/opsx:apply`. */
+const namesWorkflow = (text: string, id: string) =>
+  new RegExp(`/opsx:${id}(?![a-z-])`).test(text);
+
 /**
  * Every subset that could expose a reference:
  * - each workflow alone: nothing may name anything but itself;
@@ -69,7 +73,7 @@ describe('generated files never name an uninstalled workflow', () => {
       const skillsOnly = transformToSkillReferences(content);
 
       for (const id of absent) {
-        expect(content, `${dirName} -> /opsx:${id}`).not.toContain(`/opsx:${id}`);
+        expect(namesWorkflow(content, id), `${dirName} -> /opsx:${id}`).toBe(false);
         expect(skillsOnly, `${dirName} -> ${skillNameFor(id)}`).not.toContain(
           skillNameFor(id)
         );
@@ -83,7 +87,7 @@ describe('generated files never name an uninstalled workflow', () => {
 
     for (const { id: commandId, body } of getCommandContents(workflows)) {
       for (const id of absent) {
-        expect(body, `${commandId} -> /opsx:${id}`).not.toContain(`/opsx:${id}`);
+        expect(namesWorkflow(body, id), `${commandId} -> /opsx:${id}`).toBe(false);
       }
     }
   });

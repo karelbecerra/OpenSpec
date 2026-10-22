@@ -201,6 +201,10 @@ export const WORKFLOW_PROMPT_META: Record<string, WorkflowPromptMeta> = {
     name: 'Apply tasks',
     description: 'Implement tasks from the current change',
   },
+  'apply-poc': {
+    name: 'Apply tasks (PoC)',
+    description: 'Implement tasks one bounded component at a time',
+  },
   update: {
     name: 'Update change',
     description: 'Revise the planning artifacts of an existing change',

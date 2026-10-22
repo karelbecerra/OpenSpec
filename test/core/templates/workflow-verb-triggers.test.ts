@@ -23,6 +23,7 @@ const NATURAL_VERB_BY_WORKFLOW: Record<string, string> = {
   new: 'new change',
   continue: 'continue',
   apply: 'apply',
+  'apply-poc': 'apply-poc',
   update: 'update change',
   ff: 'ff',
   sync: 'sync',
