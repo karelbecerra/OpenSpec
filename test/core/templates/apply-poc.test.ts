@@ -28,6 +28,18 @@ describe('apply PoC mode', () => {
     expect(body).not.toContain('/opsx:apply-poc');
   });
 
+  it('forbids git and asks before moving files to assessment/ on every entry point', () => {
+    for (const body of [
+      getApplyPocSkillTemplate().instructions,
+      getOpsxApplyPocCommandTemplate().content,
+      getApplyChangeSkillTemplate().instructions,
+    ]) {
+      expect(body).toContain('Do not run any git command');
+      expect(body).toContain('`assessment/`');
+      expect(body).toContain('Ask first and wait for the answer');
+    }
+  });
+
   it('shares the same apply steps across both entry points', () => {
     const stepsOf = (body: string) => body.slice(body.indexOf('**Steps**'), body.indexOf('## PoC mode'));
     expect(stepsOf(getApplyInstructions({ poc: 'always' })).replaceAll('/opsx:apply-poc', '/opsx:apply'))
